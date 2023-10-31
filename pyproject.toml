@@ -1,0 +1,21 @@
+[project]
+name = "puzzle"
+version = "0.0.1"
+authors = [
+  { name="Ricardo Vieira", email="ricardo.vieira1994@gmail.com" },
+]
+description = "Source code for probability puzzles notebook"
+
+dependencies = [
+    "pymc >= 5.9.0",
+]
+
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/ricardoV94/probability-puzzles"
+"Bug Tracker" = "https://github.com/ricardoV94/probability-puzzles/issues"
