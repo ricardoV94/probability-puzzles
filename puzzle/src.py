@@ -155,7 +155,7 @@ def get_inputs_and_solution(exercise):
         
     elif exercise == "F-n-dof1-one-dof2":
         params = dict(dof1=np.pi+1)
-        ref = pm.math.sqrt(pm.StudentT.dist(nu=params["dof1"], mu=0, sigma=1))
+        ref = 1/(pm.StudentT.dist(nu=params["dof1"], mu=0, sigma=1)) ** 2
         test_values = np.linspace(-1, 3, 100)
     
     elif exercise == "Reciprocal":
