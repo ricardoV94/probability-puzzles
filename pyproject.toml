@@ -7,7 +7,7 @@ authors = [
 description = "Source code for probability puzzles notebook"
 
 dependencies = [
-    "pymc >= 5.9.0",
+    "pymc >= 5.18.0",
 ]
 
 classifiers = [
