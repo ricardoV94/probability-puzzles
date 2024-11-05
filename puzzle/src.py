@@ -24,7 +24,6 @@ def check_valid_graph(rv):
         pm.Gamma,
         pm.Beta,
         pm.StudentT,
-        pm.MvNormal,
     )
     
     for var in ancestors([rv]):
@@ -46,15 +45,7 @@ def get_inputs_and_solution(exercise):
         )        
         ref = pm.LogNormal.dist(**params)
         test_values = np.linspace(-1, 3, 100)
-        
-    elif exercise == "Exp-Normal":
-        params = dict(
-            mu=np.e*2,
-            sigma=np.log(2),
-        )        
-        ref = pm.math.log(pm.Normal.dist(**params))
-        test_values = np.linspace(-1, 3, 100)
-    
+
     elif exercise == "Half-Normal":
         params = dict(
             sigma=np.log(2),
@@ -84,7 +75,7 @@ def get_inputs_and_solution(exercise):
         )        
         ref = 1 / pm.Normal.dist(**params)
         test_values = np.linspace(-3, 3, 100)
-        
+
     elif exercise == "Logit-Normal":
         params = dict(
             mu=np.log(2),
@@ -92,7 +83,7 @@ def get_inputs_and_solution(exercise):
         )        
         ref = pm.LogitNormal.dist(**params)
         test_values = np.linspace(-0.5, 1.5, 100)
-        
+
     elif exercise == "Inverse-Gamma":
         params = dict(
             alpha=np.pi,
@@ -100,15 +91,7 @@ def get_inputs_and_solution(exercise):
         )        
         ref = pm.InverseGamma.dist(**params)
         test_values = np.linspace(-0.5, 3.0, 100)
-        
-    elif exercise == "Log-Gamma":
-        params = dict(
-            alpha=np.pi,
-            beta=1+1/11,
-        )        
-        ref = pm.math.log(pm.Gamma.dist(**params))
-        test_values = np.linspace(-2.0, 3.0, 100)
-        
+
     elif exercise == "Generalized-Gamma":
         params = dict(
             alpha=np.pi * 1.5,
@@ -131,18 +114,11 @@ def get_inputs_and_solution(exercise):
         ref = pm.ChiSquared.dist(nu=1)
         test_values = np.linspace(-1, 3, 100)
         
-    elif exercise == "Chi2-one-dof-mean":
-        params = dict(
-            mean=np.sqrt(np.sqrt(2)),
-        )
-        ref = pm.ChiSquared.dist(nu=1) + params["mean"] ** 2
-        test_values = np.linspace(-1, 3, 100)
-        
     elif exercise == "Chi2-n-dof":
         params = dict(dof=np.pi)
         ref = pm.ChiSquared.dist(nu=params["dof"])
         test_values = np.linspace(-1, 7, 100)
-        
+
     elif exercise == "Chi-n-dof":
         params = dict(dof=np.pi)
         ref = pm.math.sqrt(pm.ChiSquared.dist(nu=params["dof"]))
@@ -152,7 +128,7 @@ def get_inputs_and_solution(exercise):
         params = dict(dof2=np.pi+1)
         ref = pm.math.sqr(pm.StudentT.dist(nu=params["dof2"], mu=0, sigma=1))
         test_values = np.linspace(-1, 3, 100)
-        
+
     elif exercise == "F-n-dof1-one-dof2":
         params = dict(dof1=np.pi+1)
         ref = 1/(pm.StudentT.dist(nu=params["dof1"], mu=0, sigma=1)) ** 2
@@ -170,11 +146,19 @@ def get_inputs_and_solution(exercise):
         params = dict(lam=1/11,)
         ref = pm.Exponential.dist(**params)
         test_values = np.linspace(-1, 30, 100)
-        
+
     elif exercise == "Uniform":
         params = dict()
         ref = pm.Uniform.dist()
         test_values = np.linspace(-0.5, 1.5, 100)
+
+    elif exercise == "Uniform-Interval":
+        params = dict(
+            a=-1,
+            b=np.pi,
+        )
+        ref = pm.Uniform.dist(lower=params["a"], upper=params["b"])
+        test_values = np.linspace(-2, np.pi + 1, 100)
         
     elif exercise == "Weibull":
         params = dict(
@@ -183,7 +167,7 @@ def get_inputs_and_solution(exercise):
         )
         ref = pm.Weibull.dist(beta=params["lam"], alpha=params["k"])
         test_values = np.linspace(-1, 3, 100)
-        
+
     elif exercise == "PERT":
         params = dict(
             min=np.pi,
@@ -208,8 +192,7 @@ def get_inputs_and_solution(exercise):
         
         ref = pm.math.sqrt(pm.ChiSquared.dist(nu=3)) * params["scale"]
         test_values = np.linspace(-1, 12, 100)
-        
-        
+
     elif exercise == "Sinh-Arcsinh-Normal":
         params = dict(
             mu=np.log(2),
@@ -225,8 +208,18 @@ def get_inputs_and_solution(exercise):
         
         ref = mu + sigma * pm.math.sinh((pm.math.arcsinh(pm.Normal.dist()) + nu) / tau)
         test_values = np.linspace(-6, 6, 100)
-        
-    elif exercise == "Multivariate-Log-Normal":
+
+    elif exercise == "Bivariate-Normal":
+        params = dict(
+            mu=[np.pi*3, np.pi*9],
+            cov=[[1, 0.7], [0.7, 2]],
+        )
+        ref = pm.MvNormal.dist(**params)
+
+        X, Y = np.meshgrid(np.linspace(0, 20, 75), np.linspace(20, 40, 75))
+        test_values = np.dstack([X, Y]).reshape(-1, 2)
+
+    elif exercise == "Bivariate-Log-Normal":
         params = dict(
             mu=[np.pi/2, np.pi/2],
             cov=np.eye(2) * np.log(2.0),
@@ -238,13 +231,13 @@ def get_inputs_and_solution(exercise):
         
     elif exercise == "Normal-Random-Walk":
         params = dict(
-            x0=np.pi,
+            start=np.pi,
             drift=-2/11,
             sigma=np.log(2),
             n_steps=50,
         )
         ref = (
-            params["x0"]
+            params["start"]
             + pm.Normal.dist(
                 mu=params["drift"], 
                 sigma=params["sigma"], 
@@ -253,16 +246,36 @@ def get_inputs_and_solution(exercise):
         )
         
         rng = np.random.default_rng(123)
+
+
         test_values = rng.normal(size=(1, params["n_steps"]))
-        
-    elif exercise == "Maximum-N-IID-Normal":
+
+    elif exercise == "Bivariate-Exponential-HalfNormal":
+        params = dict(scale=np.pi)
+        x = pm.Exponential.dist(scale=params["scale"])
+        y = pm.HalfNormal.dist(sigma=params["scale"])
+        ref = pm.math.stack([x, y])
+
+        X, Y = np.meshgrid(np.linspace(0, 20, 75), np.linspace(0, 20, 75))
+        test_values = np.dstack([X, Y]).reshape(-1, 2)
+
+    elif exercise == "Bivariate-Exponential-HalfNormal-Bonus":
+        params = dict(scale=np.pi)
+        x = pm.Exponential.dist(scale=params["scale"])
+        y = pm.HalfNormal.dist(sigma=params["scale"])
+        ref = pm.math.stack([x, y + x])
+
+        X, Y = np.meshgrid(np.linspace(0, 20, 75), np.linspace(0, 20, 75))
+        test_values = np.dstack([X, Y]).reshape(-1, 2)
+
+    elif exercise == "Minimum-N-IID-Normal":
         params = dict(
             mu=np.log(2),
             sigma=np.log(2),
             n=3,
         )
-        ref = pm.math.max(pm.Normal.dist(params["mu"], params["sigma"], shape=params["n"]))
-        test_values = np.linspace(-1, 3, 100)
+        ref = pm.math.min(pm.Normal.dist(params["mu"], params["sigma"], shape=params["n"]))
+        test_values = np.linspace(-2, 3, 100)
     
     elif exercise == "Censored-Normal":
         params = dict(mu=np.log(2), sigma=np.sqrt(2), lower=0, upper=np.pi)
@@ -294,11 +307,6 @@ def get_inputs_and_solution(exercise):
         params = dict(p=1/3)
         ref = pm.Geometric.dist(**params)
         test_values = np.arange(1, 12+1).astype("float64")
-         
-    elif exercise == "Normal-Normal-Mixture":
-        params = dict(w=[0.3, 0.7], mu=[-1.1, 1.1], sigma=np.log(2))
-        ref = pm.NormalMixture.dist(**params)
-        test_values = np.linspace(-3, 3, 100)
         
     else:
         raise ValueError(f"Unknown exercise: {exercise}")
@@ -310,17 +318,23 @@ def get_inputs_and_solution(exercise):
 def plot_pdf(exercise, test_values, ref_logp_eval, rv_logp_eval=None):
     ylabel = "Probability function"
     
-    if exercise == "Multivariate-Log-Normal":
+    if exercise.startswith("Bivariate-"):
         fig, ax = plt.subplots(1, 2, figsize=(12, 6))
         for axi in ax:
             axi.set_box_aspect(1)
-            
+
+        if ref_logp_eval.ndim == 2:
+            # The stack logp does not reduce the last dimension
+            ref_logp_eval = ref_logp_eval.sum(axis=-1)
+
         n = int(np.sqrt(ref_logp_eval.size))
         x = test_values[..., 0].reshape(n, n)
         y = test_values[..., 1].reshape(n, n)
         
         ax[0].contour(x, y, ref_logp_eval.reshape(n, n), levels=15)
         if rv_logp_eval is not None:
+            if rv_logp_eval.ndim == 2:
+                rv_logp_eval = rv_logp_eval.sum(axis=-1)
             ax[1].contour(x, y, rv_logp_eval.reshape(n, n), levels=15)
         
         ax[0].set_title("expected")
@@ -328,6 +342,7 @@ def plot_pdf(exercise, test_values, ref_logp_eval, rv_logp_eval=None):
         fig.suptitle(exercise)
         
     elif exercise == "Normal-Random-Walk":
+        # TODO: Plot contours over time
         steps = np.arange(ref_logp_eval.size)
         plt.scatter(steps, np.exp(ref_logp_eval[0]), label="expected", color="k")
         if rv_logp_eval is not None:
